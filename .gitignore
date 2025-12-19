@@ -1,2 +1,5 @@
-./backend/node_modules/
-/a.csv
+# Ignore node_modules everywhere
+node_modules/
+
+# Ignore CSV seed file
+a.csv
