@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Demographic Data Management - Records</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.7.2/dist/axios.min.js"></script>
+    <script src="common.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-50 text-slate-900">
+    <div id="navbar"></div>
+    <div class="max-w-6xl mx-auto p-6 space-y-6">
+      <header class="flex items-center justify-between">
+        <div>
+          <p class="text-sm uppercase tracking-wide text-slate-500">Dataset</p>
+          <h1 class="text-3xl font-bold text-slate-900">Records</h1>
+          <p class="text-slate-500">
+            Sort, filter, and explore the saved data.
+          </p>
+        </div>
+      </header>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-lg">
+          <h2 class="text-lg font-semibold mb-3">Sort Records</h2>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="sortRecords('age')" class="chip">Age</button>
+            <button onclick="sortRecords('address')" class="chip">
+              Address
+            </button>
+            <button onclick="sortRecords('part_no')" class="chip">
+              Part No
+            </button>
+            <button onclick="sortRecords('caste')" class="chip">Caste</button>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-lg">
+          <h2 class="text-lg font-semibold mb-3">Filter Records</h2>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <input
+              type="text"
+              id="filterName"
+              placeholder="Name"
+              class="input"
+              oninput="filterRecords()"
+            />
+            <input
+              type="number"
+              id="filterAge"
+              placeholder="Age"
+              class="input"
+              oninput="filterRecords()"
+            />
+            <input
+              type="text"
+              id="filterCaste"
+              placeholder="Caste"
+              class="input"
+              oninput="filterRecords()"
+            />
+            <select id="filterSex" class="input" onchange="filterRecords()">
+              <option value="">All Genders</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden"
+      >
+        <table id="recordsTable" class="w-full text-left">
+          <thead class="bg-slate-100 text-slate-800">
+            <tr>
+              <th class="px-4 py-3 text-sm font-semibold">Name</th>
+              <th class="px-4 py-3 text-sm font-semibold">Age</th>
+              <th class="px-4 py-3 text-sm font-semibold">Sex</th>
+              <th class="px-4 py-3 text-sm font-semibold">Address</th>
+              <th class="px-4 py-3 text-sm font-semibold">Part No</th>
+              <th class="px-4 py-3 text-sm font-semibold">Society</th>
+              <th class="px-4 py-3 text-sm font-semibold">Caste</th>
+            </tr>
+          </thead>
+          <tbody id="recordsBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </div>
+    <style>
+      .input {
+        width: 100%;
+        border: 2px solid #2563eb;
+        background: #ffffff;
+        color: #0f172a;
+        padding: 10px;
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease,
+          background-color 0.2s ease;
+      }
+      .input::placeholder {
+        color: #6b7280;
+      }
+      .input:focus {
+        outline: none;
+        border-color: #1d4ed8;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        background: #f8fbff;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: #f1f5f9;
+        color: #1f2937;
+        font-size: 0.9rem;
+        border: 2px solid #e2e8f0;
+        transition: background-color 0.15s ease, border-color 0.15s ease,
+          color 0.15s ease;
+      }
+      .chip:hover {
+        background: #eff6ff;
+        border-color: #bfdbfe;
+        color: #1d4ed8;
+      }
+    </style>
+    <script src="navbar.js"></script>
+    <script>
+      renderNavbar("records");
+      let records = [];
+
+      async function fetchRecords() {
+        try {
+          const response = await axios.get("http://localhost:3000/api/records");
+          return response.data;
+        } catch (error) {
+          console.error("Error fetching records:", error);
+          return [];
+        }
+      }
+
+      function renderTable() {
+        const tbody = document.getElementById("recordsBody");
+        tbody.innerHTML = "";
+        records.forEach((record) => {
+          const row = document.createElement("tr");
+          row.className = "hover:bg-blue-50";
+          row.innerHTML = `
+        <td class="px-4 py-3">${record.name}</td>
+        <td class="px-4 py-3">${record.age}</td>
+        <td class="px-4 py-3">${record.sex}</td>
+        <td class="px-4 py-3">${record.address}</td>
+        <td class="px-4 py-3">${record.part_no}</td>
+        <td class="px-4 py-3">${record.society}</td>
+        <td class="px-4 py-3">${record.caste}</td>
+      `;
+          tbody.appendChild(row);
+        });
+      }
+
+      function sortRecords(key) {
+        records.sort((a, b) => {
+          if (key === "age") return Number(a[key]) - Number(b[key]);
+          return a[key].localeCompare(b[key]);
+        });
+        renderTable(); // only renders, no fetch
+      }
+
+      async function init() {
+        records = await fetchRecords();
+        renderTable();
+      }
+
+      init();
+      function filterRecords() {
+        const name = document.getElementById("filterName").value.toLowerCase();
+        const age = document.getElementById("filterAge").value;
+        const caste = document
+          .getElementById("filterCaste")
+          .value.toLowerCase();
+        const sex = document.getElementById("filterSex").value;
+
+        const filtered = records.filter((record) => {
+          const matchesName = record.name.toLowerCase().includes(name);
+          const matchesAge = age === "" || Number(record.age) === Number(age);
+          const matchesCaste = record.caste.toLowerCase().includes(caste);
+          const matchesSex = sex === "" || record.sex === sex;
+          return matchesName && matchesAge && matchesCaste && matchesSex;
+        });
+
+        renderFilteredTable(filtered);
+      }
+
+      function renderFilteredTable(filteredRecords) {
+        const tbody = document.getElementById("recordsBody");
+        tbody.innerHTML = "";
+        filteredRecords.forEach((record) => {
+          const row = document.createElement("tr");
+          row.className = "hover:bg-blue-50";
+          row.innerHTML = `
+      <td class="px-4 py-3">${record.name}</td>
+      <td class="px-4 py-3">${record.age}</td>
+      <td class="px-4 py-3">${record.sex}</td>
+      <td class="px-4 py-3">${record.address}</td>
+      <td class="px-4 py-3">${record.part_no}</td>
+      <td class="px-4 py-3">${record.society}</td>
+      <td class="px-4 py-3">${record.caste}</td>
+    `;
+          tbody.appendChild(row);
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Demographic Data Management - Manual Entry</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.7.2/dist/axios.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-50 min-h-screen text-slate-900">
+    <div id="navbar"></div>
+    <div id="statusBar" class="fixed top-4 right-4 z-50 hidden"></div>
+    <div class="max-w-6xl mx-auto p-6 space-y-6">
+      <header class="flex items-center justify-between">
+        <div>
+          <p class="text-sm uppercase tracking-wide text-slate-500">
+            Data Entry
+          </p>
+          <h1 class="text-3xl font-bold text-slate-900">
+            Manual Record Capture
+          </h1>
+          <p class="text-slate-500">
+            Add voter(s) record with validation.
+          </p>
+        </div>
+      </header>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <section
+          class="bg-white border-2 border-slate-300 rounded-2xl p-6 shadow-lg"
+        >
+          <h2 class="text-xl font-semibold mb-4">Single Entry</h2>
+          <form id="manualForm" class="grid grid-cols-2 gap-4">
+            <label class="field">
+              <span class="field-label">Full name</span>
+              <input
+                type="text"
+                id="name"
+                class="input"
+                placeholder="e.g. Riya Sharma"
+                required
+              />
+            </label>
+            <label class="field">
+              <span class="field-label">Age</span>
+              <input
+                type="number"
+                id="age"
+                class="input"
+                placeholder="28"
+                required
+              />
+            </label>
+            <label class="field">
+              <span class="field-label">Sex</span>
+              <select id="sex" class="input" required>
+                <option value="">Select sex</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">Address</span>
+              <input
+                type="text"
+                id="address"
+                class="input"
+                placeholder="Street, City"
+                required
+              />
+            </label>
+            <label class="field">
+              <span class="field-label">Part No</span>
+              <input
+                type="text"
+                id="part_no"
+                class="input"
+                placeholder="123"
+                required
+              />
+            </label>
+            <label class="field">
+              <span class="field-label">Society</span>
+              <input
+                type="text"
+                id="society"
+                class="input"
+                placeholder="Housing society"
+                required
+              />
+            </label>
+            <label class="field">
+              <span class="field-label">Caste</span>
+              <input
+                type="text"
+                id="caste"
+                class="input"
+                placeholder="Caste"
+                required
+              />
+            </label>
+            <button type="submit" class="btn-primary col-span-2">
+              Add Record
+            </button>
+          </form>
+        </section>
+
+        <section
+          class="bg-white border-2 border-slate-300 rounded-2xl p-6 shadow-lg"
+        >
+          <h2 class="text-xl font-semibold mb-4">Bulk Upload (CSV)</h2>
+          <div class="space-y-3">
+            <input type="file" id="fileInput" accept=".csv" class="input" />
+            <p class="text-sm text-slate-400">
+              CSV columns: name, age, sex, address, part_no, society, caste
+            </p>
+            <p class="text-xs text-slate-500">
+              Tip: Clean your CSV headers to match exactly. Bulk upload replaces
+              nothing; it appends records.
+            </p>
+          </div>
+        </section>
+      </div>
+    </div>
+    <style>
+      .input {
+        width: 100%;
+        border: 2px solid #2563eb;
+        background: #ffffff;
+        color: #0f172a;
+        padding: 12px;
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease,
+          background-color 0.2s ease;
+      }
+      .input::placeholder {
+        color: #6b7280;
+      }
+      .input:focus {
+        outline: none;
+        border-color: #1d4ed8;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        background: #f8fbff;
+      }
+      select.input {
+        appearance: none;
+        background-image: linear-gradient(45deg, transparent 50%, #1d4ed8 50%),
+          linear-gradient(135deg, #1d4ed8 50%, transparent 50%),
+          linear-gradient(to right, #e5e7eb, #e5e7eb);
+        background-position: calc(100% - 18px) calc(50% - 4px),
+          calc(100% - 12px) calc(50% - 4px), calc(100% - 2.5rem) 50%;
+        background-size: 8px 8px, 8px 8px, 1px 60%;
+        background-repeat: no-repeat;
+        padding-right: 48px;
+      }
+      .btn-primary {
+        background: linear-gradient(90deg, #2563eb, #4f46e5);
+        color: #ffffff;
+        font-weight: 600;
+        padding: 14px;
+        border-radius: 12px;
+        border: 1px solid #1d4ed8;
+        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
+        transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+        width: 100%;
+      }
+      .btn-primary:hover {
+        filter: brightness(1.05);
+        box-shadow: 0 12px 30px rgba(79, 70, 229, 0.25);
+        transform: translateY(-1px);
+      }
+      .btn-primary:active {
+        transform: translateY(0);
+        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .field-label {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #0f172a;
+      }
+      #statusBar .toast {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 14px;
+        margin-top: 10px;
+        border-radius: 12px;
+        color: #0f172a;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+        border: 1px solid #e2e8f0;
+        background: linear-gradient(135deg, #ffffff, #f8fafc);
+        min-width: 240px;
+      }
+      #statusBar .toast.success {
+        border-color: #c7e0ff;
+        background: linear-gradient(135deg, #eef5ff, #f8fbff);
+      }
+      #statusBar .toast.error {
+        border-color: #fecdd3;
+        background: linear-gradient(135deg, #fff1f2, #fff7f7);
+      }
+    </style>
+    <script src="navbar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script>
+        const showStatus = (message, type = "success") => {
+        const bar = document.getElementById("statusBar");
+        const toast = document.createElement("div");
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        bar.appendChild(toast);
+        bar.classList.remove("hidden");
+        setTimeout(() => {
+          toast.remove();
+          if (!bar.hasChildNodes()) bar.classList.add("hidden");
+        }, 3200);
+      };
+      renderNavbar("manual");
+      document
+        .getElementById("manualForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const formData = {
+            name: document.getElementById("name").value,
+            age: document.getElementById("age").value,
+            sex: document.getElementById("sex").value,
+            address: document.getElementById("address").value,
+            part_no: document.getElementById("part_no").value,
+            society: document.getElementById("society").value,
+            caste: document.getElementById("caste").value,
+          };
+          try {
+            await axios.post("http://localhost:3000/api/records", formData);
+            document.getElementById("manualForm").reset();
+            showStatus("Record added successfully!", "success");
+          } catch (error) {
+            console.error("Error adding record:", error);
+            showStatus("Failed to add record", "error");
+          }
+        });
+      document.getElementById("fileInput").addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          Papa.parse(file, {
+            header: true,
+            complete: async (result) => {
+              const data = result.data.map((row) => ({
+                name: row.name || "",
+                age: row.age || "",
+                sex: row.sex || "",
+                address: row.address || "",
+                part_no: row.part_no || "",
+                society: row.society || "",
+                caste: row.caste || "",
+              }));
+              try {
+                await axios.post(
+                  "http://localhost:3000/api/records/bulk",
+                  data
+                );
+                e.target.value = "";
+                showStatus("Bulk records uploaded successfully!", "success");
+              } catch (error) {
+                console.error("Error uploading bulk data:", error);
+                showStatus("Failed to upload records", "error");
+              }
+            },
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

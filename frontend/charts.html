@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Demographic Data Management - Charts</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.7.2/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="common.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-50 text-slate-900">
+    <div id="navbar"></div>
+    <div class="max-w-6xl mx-auto p-6 space-y-6">
+      <header class="flex items-center justify-between">
+        <div>
+          <p class="text-sm uppercase tracking-wide text-slate-500">Insights</p>
+          <h1 class="text-3xl font-bold text-slate-900">
+            Charts & Distribution
+          </h1>
+          <p class="text-slate-500">
+            Quick visuals for demographics captured so far.
+          </p>
+        </div>
+      </header>
+
+      <div class="flex flex-wrap gap-2 mb-4" id="chartFilters">
+        <button class="filter-btn active" data-target="all">All</button>
+        <button class="filter-btn" data-target="surname">Surname</button>
+        <button class="filter-btn" data-target="age">Age</button>
+        <button class="filter-btn" data-target="gender">Gender</button>
+        <button class="filter-btn" data-target="caste">Caste</button>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="card" data-chart="surname">
+          <div class="card-header">Surname Distribution</div>
+          <canvas id="surnameChart" class="w-full h-64"></canvas>
+        </div>
+        <div class="card" data-chart="age">
+          <div class="card-header">Age Distribution</div>
+          <canvas id="ageChart" class="w-full h-64"></canvas>
+        </div>
+        <div class="card" data-chart="gender">
+          <div class="card-header">Gender Distribution</div>
+          <canvas id="genderChart" class="w-full h-64"></canvas>
+        </div>
+        <div class="card" data-chart="caste">
+          <div class="card-header">Caste Distribution</div>
+          <canvas id="casteChart" class="w-full h-64"></canvas>
+        </div>
+      </div>
+    </div>
+    <style>
+      .card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+      }
+      .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #0f172a;
+      }
+      .filter-btn {
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid #cbd5e1;
+        background: #f8fafc;
+        color: #0f172a;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: background-color 0.15s ease, border-color 0.15s ease,
+          color 0.15s ease, box-shadow 0.15s ease;
+      }
+      .filter-btn:hover {
+        background: #e0f2fe;
+        border-color: #93c5fd;
+        color: #1d4ed8;
+        box-shadow: 0 6px 12px rgba(59, 130, 246, 0.18);
+      }
+      .filter-btn.active {
+        background: linear-gradient(90deg, #2563eb, #4f46e5);
+        color: #ffffff;
+        border-color: #2563eb;
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.25);
+      }
+    </style>
+    <script src="navbar.js"></script>
+    <script>
+      renderNavbar("charts");
+      let surnameChart = null;
+      let ageChart = null;
+      let genderChart = null;
+      let casteChart = null;
+
+      // Filter buttons to toggle chart visibility
+      const filterButtons = document.querySelectorAll(".filter-btn");
+      const chartCards = document.querySelectorAll("[data-chart]");
+
+      filterButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          filterButtons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          const target = btn.dataset.target;
+          chartCards.forEach((card) => {
+            const key = card.dataset.chart;
+            const show = target === "all" || target === key;
+            card.style.display = show ? "" : "none";
+          });
+        });
+      });
+
+      async function renderCharts() {
+        const records = await fetchRecords();
+
+        // --- Surname Bar Chart ---
+        const surnames = records.reduce((acc, rec) => {
+          const surname = rec.name.split(" ").pop();
+          acc[surname] = (acc[surname] || 0) + 1;
+          return acc;
+        }, {});
+        const surnameData = {
+          labels: Object.keys(surnames),
+          datasets: [
+            {
+              label: "Surname Distribution",
+              data: Object.values(surnames),
+              backgroundColor: "rgba(75, 192, 192, 0.6)",
+            },
+          ],
+        };
+        if (surnameChart) surnameChart.destroy();
+        surnameChart = new Chart(document.getElementById("surnameChart"), {
+          type: "bar",
+          data: surnameData,
+          options: {
+            responsive: true,
+            onClick: (event, elements) => {
+              if (elements.length > 0) {
+                const index = elements[0].index;
+                const label = surnameData.labels[index];
+                const count = surnameData.datasets[0].data[index];
+                alert(`Surname: ${label}\nCount: ${count}`);
+              }
+            },
+            scales: { y: { beginAtZero: true } },
+          },
+        });
+
+        // --- Age Bar Chart ---
+        const ageBins = {
+          "0-9": 0,
+          "10-19": 0,
+          "20-29": 0,
+          "30-39": 0,
+          "40-49": 0,
+          "50-59": 0,
+          "60-69": 0,
+          "70+": 0,
+        };
+        records.forEach((rec) => {
+          const age = parseInt(rec.age);
+          if (age < 10) ageBins["0-9"]++;
+          else if (age < 20) ageBins["10-19"]++;
+          else if (age < 30) ageBins["20-29"]++;
+          else if (age < 40) ageBins["30-39"]++;
+          else if (age < 50) ageBins["40-49"]++;
+          else if (age < 60) ageBins["50-59"]++;
+          else if (age < 70) ageBins["60-69"]++;
+          else ageBins["70+"]++;
+        });
+        const ageData = {
+          labels: Object.keys(ageBins),
+          datasets: [
+            {
+              label: "Age Distribution",
+              data: Object.values(ageBins),
+              backgroundColor: "rgba(153, 102, 255, 0.6)",
+            },
+          ],
+        };
+        if (ageChart) ageChart.destroy();
+        ageChart = new Chart(document.getElementById("ageChart"), {
+          type: "bar",
+          data: ageData,
+          options: {
+            responsive: true,
+            onClick: (event, elements) => {
+              if (elements.length > 0) {
+                const index = elements[0].index;
+                const label = ageData.labels[index];
+                const count = ageData.datasets[0].data[index];
+                alert(`Age Group: ${label}\nCount: ${count}`);
+              }
+            },
+            scales: { y: { beginAtZero: true } },
+          },
+        });
+
+        // --- Gender Pie Chart ---
+        const genders = records.reduce((acc, rec) => {
+          acc[rec.sex] = (acc[rec.sex] || 0) + 1;
+          return acc;
+        }, {});
+        const genderData = {
+          labels: Object.keys(genders),
+          datasets: [
+            {
+              label: "Gender Distribution",
+              data: Object.values(genders),
+              backgroundColor: [
+                "rgba(255, 99, 132, 0.6)",
+                "rgba(54, 162, 235, 0.6)",
+              ],
+            },
+          ],
+        };
+        if (genderChart) genderChart.destroy();
+        genderChart = new Chart(document.getElementById("genderChart"), {
+          type: "pie",
+          data: genderData,
+          options: {
+            responsive: true,
+            onClick: (event, elements) => {
+              if (elements.length > 0) {
+                const index = elements[0].index;
+                const label = genderData.labels[index];
+                const count = genderData.datasets[0].data[index];
+                alert(`Gender: ${label}\nCount: ${count}`);
+              }
+            },
+          },
+        });
+        // --- Caste Pie Chart ---
+        const castes = records.reduce((acc, rec) => {
+          acc[rec.caste] = (acc[rec.caste] || 0) + 1;
+          return acc;
+        }, {});
+
+        const casteData = {
+          labels: Object.keys(castes),
+          datasets: [
+            {
+              label: "Caste Distribution",
+              data: Object.values(castes),
+              backgroundColor: [
+                "rgba(255, 99, 132, 0.6)", // red-ish
+                "rgba(54, 162, 235, 0.6)", // blue-ish
+                "rgba(255, 206, 86, 0.6)", // yellow-ish
+                "rgba(75, 192, 192, 0.6)", // teal-ish
+                "rgba(153, 102, 255, 0.6)", // purple-ish
+                "rgba(255, 159, 64, 0.6)", // orange-ish
+              ], // add as many colors as you expect caste categories
+            },
+          ],
+        };
+
+        if (casteChart) casteChart.destroy();
+
+        casteChart = new Chart(document.getElementById("casteChart"), {
+          type: "pie",
+          data: casteData,
+          options: {
+            responsive: true,
+            onClick: (event, elements) => {
+              if (elements.length > 0) {
+                const index = elements[0].index;
+                const label = casteData.labels[index];
+                const count = casteData.datasets[0].data[index];
+                alert(`Caste: ${label}\nCount: ${count}`);
+              }
+            },
+          },
+        });
+      }
+
+      renderCharts();
+    </script>
+  </body>
+</html>
