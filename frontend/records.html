@@ -22,7 +22,9 @@
       </header>
 
       <div class="grid md:grid-cols-2 gap-4">
-        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-lg space-y-3">
+        <div
+          class="bg-white border border-slate-200 rounded-xl p-4 shadow-lg space-y-3"
+        >
           <h2 class="text-lg font-semibold">Filter & Search</h2>
           <input
             type="text"
@@ -31,9 +33,24 @@
             class="input"
           />
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <input type="number" id="filterAgeMin" placeholder="Age min" class="input" />
-            <input type="number" id="filterAgeMax" placeholder="Age max" class="input" />
-            <input type="text" id="filterCaste" placeholder="Caste" class="input" />
+            <input
+              type="number"
+              id="filterAgeMin"
+              placeholder="Age min"
+              class="input"
+            />
+            <input
+              type="number"
+              id="filterAgeMax"
+              placeholder="Age max"
+              class="input"
+            />
+            <input
+              type="text"
+              id="filterCaste"
+              placeholder="Caste"
+              class="input"
+            />
             <select id="filterSex" class="input">
               <option value="">All Genders</option>
               <option value="Male">Male</option>
@@ -61,7 +78,9 @@
           </div>
         </div>
 
-        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-lg space-y-2">
+        <div
+          class="bg-white border border-slate-200 rounded-xl p-4 shadow-lg space-y-2"
+        >
           <h2 class="text-lg font-semibold">Summary</h2>
           <div class="grid grid-cols-2 gap-3 text-sm text-slate-700">
             <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
@@ -76,12 +95,20 @@
         </div>
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-xl shadow-lg p-4 flex items-center justify-between">
+      <div
+        class="bg-white border border-slate-200 rounded-xl shadow-lg p-4 flex items-center justify-between"
+      >
         <div class="text-sm text-slate-600">Bulk actions for selected rows</div>
         <div class="flex gap-2">
-          <button id="editSelected" class="btn-primary" disabled>Edit Selected</button>
-          <button id="deleteSelected" class="btn-danger" disabled>Delete Selected</button>
-          <button id="deleteAllBtn" class="btn-danger" disabled>Delete All</button>
+          <button id="editSelected" class="btn-primary" disabled>
+            Edit Selected
+          </button>
+          <button id="deleteSelected" class="btn-danger" disabled>
+            Delete Selected
+          </button>
+          <button id="deleteAllBtn" class="btn-danger" disabled>
+            Delete All
+          </button>
         </div>
       </div>
 
@@ -107,7 +134,9 @@
           <tbody id="recordsBody" class="divide-y divide-slate-100"></tbody>
         </table>
       </div>
-      <div class="flex justify-between items-center text-sm text-slate-600 mt-3">
+      <div
+        class="flex justify-between items-center text-sm text-slate-600 mt-3"
+      >
         <div>
           <button id="prevPage" class="btn-ghost">Prev</button>
           <button id="nextPage" class="btn-ghost">Next</button>
@@ -253,7 +282,8 @@
         const visibleIds = records.map((r) => r._id);
         const anyVisibleSelected = visibleIds.some((id) => selectedIds.has(id));
         const allVisibleSelected =
-          visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id));
+          visibleIds.length > 0 &&
+          visibleIds.every((id) => selectedIds.has(id));
         if (selectAll) {
           selectAll.checked = allVisibleSelected;
           selectAll.indeterminate = !allVisibleSelected && anyVisibleSelected;
@@ -272,20 +302,42 @@
           const isEditing = editingId === record._id;
           const cells = isEditing
             ? `
-          <td class="px-4 py-3 text-center"><input type="checkbox" class="row-select" data-id="${record._id}" ${selectedIds.has(record._id) ? "checked" : ""} disabled /></td>
-          <td class="px-4 py-3"><input class="input" data-field="name" value="${record.name || ""}" /></td>
-          <td class="px-4 py-3"><input class="input" data-field="age" type="number" value="${record.age || ""}" /></td>
-          <td class="px-4 py-3"><input class="input" data-field="sex" value="${record.sex || ""}" /></td>
-          <td class="px-4 py-3"><input class="input" data-field="address" value="${record.address || ""}" /></td>
-          <td class="px-4 py-3"><input class="input" data-field="part_no" value="${record.part_no || ""}" /></td>
-          <td class="px-4 py-3"><input class="input" data-field="society" value="${record.society || ""}" /></td>
-          <td class="px-4 py-3"><input class="input" data-field="caste" value="${record.caste || ""}" /></td>
+          <td class="px-4 py-3 text-center"><input type="checkbox" class="row-select" data-id="${
+            record._id
+          }" ${selectedIds.has(record._id) ? "checked" : ""} disabled /></td>
+          <td class="px-4 py-3"><input class="input" data-field="name" value="${
+            record.name || ""
+          }" /></td>
+          <td class="px-4 py-3"><input class="input" data-field="age" type="number" value="${
+            record.age || ""
+          }" /></td>
+          <td class="px-4 py-3"><input class="input" data-field="sex" value="${
+            record.sex || ""
+          }" /></td>
+          <td class="px-4 py-3"><input class="input" data-field="address" value="${
+            record.address || ""
+          }" /></td>
+          <td class="px-4 py-3"><input class="input" data-field="part_no" value="${
+            record.part_no || ""
+          }" /></td>
+          <td class="px-4 py-3"><input class="input" data-field="society" value="${
+            record.society || ""
+          }" /></td>
+          <td class="px-4 py-3"><input class="input" data-field="caste" value="${
+            record.caste || ""
+          }" /></td>
           <td class="px-4 py-3 space-x-2">
-            <button class="btn-primary save-btn" data-id="${record._id}">Save</button>
-            <button class="btn-ghost cancel-btn" data-id="${record._id}">Cancel</button>
+            <button class="btn-primary save-btn" data-id="${
+              record._id
+            }">Save</button>
+            <button class="btn-ghost cancel-btn" data-id="${
+              record._id
+            }">Cancel</button>
           </td>`
             : `
-          <td class="px-4 py-3 text-center"><input type="checkbox" class="row-select" data-id="${record._id}" ${selectedIds.has(record._id) ? "checked" : ""} /></td>
+          <td class="px-4 py-3 text-center"><input type="checkbox" class="row-select" data-id="${
+            record._id
+          }" ${selectedIds.has(record._id) ? "checked" : ""} /></td>
           <td class="px-4 py-3">${record.name}</td>
           <td class="px-4 py-3">${record.age}</td>
           <td class="px-4 py-3">${record.sex}</td>
@@ -301,7 +353,10 @@
         const end = Math.min(total, page * pageSize);
         pageInfo.textContent = `Showing ${start}-${end} of ${total}`;
         statTotal.textContent = `Total: ${total}`;
-        statPage.textContent = `Page ${page} / ${Math.max(1, Math.ceil(total / pageSize))}`;
+        statPage.textContent = `Page ${page} / ${Math.max(
+          1,
+          Math.ceil(total / pageSize)
+        )}`;
         prevPage.disabled = page <= 1;
         nextPage.disabled = page * pageSize >= total;
 
@@ -342,13 +397,22 @@
           const matchesSearch =
             !search ||
             (r.name || "").toLowerCase().includes(search) ||
-              (r.address || "").toLowerCase().includes(search) ||
-              (r.society || "").toLowerCase().includes(search);
-          const matchesCaste = !casteVal || (r.caste || "").toLowerCase().includes(casteVal);
+            (r.address || "").toLowerCase().includes(search) ||
+            (r.society || "").toLowerCase().includes(search);
+          const matchesCaste =
+            !casteVal || (r.caste || "").toLowerCase().includes(casteVal);
           const matchesSex = !sexVal || r.sex === sexVal;
-          const matchesAgeMin = ageMinVal === "" || Number(r.age) >= Number(ageMinVal);
-          const matchesAgeMax = ageMaxVal === "" || Number(r.age) <= Number(ageMaxVal);
-          return matchesSearch && matchesCaste && matchesSex && matchesAgeMin && matchesAgeMax;
+          const matchesAgeMin =
+            ageMinVal === "" || Number(r.age) >= Number(ageMinVal);
+          const matchesAgeMax =
+            ageMaxVal === "" || Number(r.age) <= Number(ageMaxVal);
+          return (
+            matchesSearch &&
+            matchesCaste &&
+            matchesSex &&
+            matchesAgeMin &&
+            matchesAgeMax
+          );
         });
 
         filtered.sort((a, b) => {
@@ -435,7 +499,15 @@
 
       exportCsv.addEventListener("click", () => {
         if (!allRecords.length) return;
-        const headers = ["name", "age", "sex", "address", "part_no", "society", "caste"];
+        const headers = [
+          "name",
+          "age",
+          "sex",
+          "address",
+          "part_no",
+          "society",
+          "caste",
+        ];
         const lines = [headers.join(",")].concat(
           allRecords.map((r) =>
             headers
@@ -447,7 +519,9 @@
               .join(",")
           )
         );
-        const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+        const blob = new Blob([lines.join("\n")], {
+          type: "text/csv;charset=utf-8;",
+        });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -512,7 +586,10 @@
               draft[input.getAttribute("data-field")] = input.value;
             });
             try {
-              const updated = await axios.put(`${API_BASE}/api/records/${id}`, draft);
+              const updated = await axios.put(
+                `${API_BASE}/api/records/${id}`,
+                draft
+              );
               const idx = allRecords.findIndex((r) => r._id === id);
               if (idx >= 0) allRecords[idx] = updated.data;
               editingId = null;
@@ -522,7 +599,6 @@
             }
           });
         });
-
       }
 
       editSelected.addEventListener("click", () => {
@@ -537,12 +613,16 @@
         const ids = [...selectedIds];
         if (!confirm(`Delete ${ids.length} selected record(s)?`)) return;
         try {
-          await Promise.all(ids.map((id) => axios.delete(`${API_BASE}/api/records/${id}`)));
+          await Promise.all(
+            ids.map((id) => axios.delete(`${API_BASE}/api/records/${id}`))
+          );
           allRecords = allRecords.filter((r) => !selectedIds.has(r._id));
           selectedIds.clear();
           applyLocalFilters();
         } catch (err) {
-          alert(err?.response?.data?.error || "Failed to delete selected records");
+          alert(
+            err?.response?.data?.error || "Failed to delete selected records"
+          );
         }
       });
 
@@ -551,7 +631,9 @@
         if (!confirm("Delete ALL records? This cannot be undone.")) return;
         try {
           const ids = allRecords.map((r) => r._id);
-          await Promise.all(ids.map((id) => axios.delete(`${API_BASE}/api/records/${id}`)));
+          await Promise.all(
+            ids.map((id) => axios.delete(`${API_BASE}/api/records/${id}`))
+          );
           allRecords = [];
           records = [];
           selectedIds.clear();
