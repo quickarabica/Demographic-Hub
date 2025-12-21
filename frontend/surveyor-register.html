@@ -124,6 +124,11 @@
     </style>
     <script src="navbar.js"></script>
     <script>
+      const API_BASE =
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://demographic-hub-10.onrender.com";
+
       renderNavbar("surveyor-register");
       const form = document.getElementById("registerForm");
       const statusMsg = document.getElementById("statusMsg");
@@ -149,10 +154,10 @@
         const password = document.getElementById("surveyorPassword").value;
         setStatus("Submitting...");
         try {
-          const res = await axios.post(
-            "http://localhost:3000/api/surveyor/register",
-            { id, password }
-          );
+          const res = await axios.post(`${API_BASE}/api/surveyor/register`, {
+            id,
+            password,
+          });
           if (res.status === 201 || res.status === 200) {
             setStatus("Surveyor registered successfully");
             form.reset();

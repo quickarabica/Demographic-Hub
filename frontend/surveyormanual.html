@@ -206,6 +206,11 @@
     <script src="navbar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script>
+      const API_BASE =
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://demographic-hub-10.onrender.com";
+
       const showStatus = (message, type = "success") => {
         const bar = document.getElementById("statusBar");
         const toast = document.createElement("div");
@@ -234,7 +239,7 @@
             caste: document.getElementById("caste").value,
           };
           try {
-            await axios.post("http://localhost:3000/api/records", formData);
+            await axios.post(`${API_BASE}/api/records`, formData);
             document.getElementById("manualForm").reset();
             showStatus("Record added successfully!", "success");
           } catch (error) {
@@ -258,10 +263,7 @@
                 caste: row.caste || "",
               }));
               try {
-                await axios.post(
-                  "http://localhost:3000/api/records/bulk",
-                  data
-                );
+                await axios.post(`${API_BASE}/api/records/bulk`, data);
                 e.target.value = "";
                 showStatus("Records uploaded successfully!", "success");
               } catch (error) {
