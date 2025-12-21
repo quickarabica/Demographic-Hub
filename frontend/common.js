@@ -8,7 +8,7 @@ async function fetchRecords() {
     const response = await axios.get(`${API_BASE}/api/records`);
     return response.data;
   } catch (error) {
-    console.error('Error fetching records:', error);
+    console.error("Error fetching records:", error);
     return [];
   }
 }

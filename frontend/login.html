@@ -1,131 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login Page</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login Page</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
+      <h1 class="text-2xl font-bold text-center mb-6">Login Portal</h1>
 
-  <div class="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
-    <h1 class="text-2xl font-bold text-center mb-6">Login Portal</h1>
-    
-    <!-- Tabs -->
-    <div class="flex justify-center mb-6">
-      <button id="adminTab" onclick="showForm('admin')" class="px-4 py-2 text-white bg-blue-600 rounded-l-md">Admin</button>
-      <button id="surveyorTab" onclick="showForm('surveyor')" class="px-4 py-2 text-blue-600 bg-gray-200 rounded-r-md">Surveyor</button>
+      <!-- Tabs -->
+      <div class="flex justify-center mb-6">
+        <button
+          id="adminTab"
+          onclick="showForm('admin')"
+          class="px-4 py-2 text-white bg-blue-600 rounded-l-md"
+        >
+          Admin
+        </button>
+        <button
+          id="surveyorTab"
+          onclick="showForm('surveyor')"
+          class="px-4 py-2 text-blue-600 bg-gray-200 rounded-r-md"
+        >
+          Surveyor
+        </button>
+      </div>
+
+      <!-- Admin Login Form -->
+      <form id="adminForm" class="space-y-4">
+        <div>
+          <label class="block font-medium">Admin ID</label>
+          <input
+            type="email"
+            id="adminEmail"
+            class="w-full border p-2 rounded"
+            required
+          />
+        </div>
+        <div>
+          <label class="block font-medium">Password</label>
+          <input
+            type="password"
+            id="adminPassword"
+            class="w-full border p-2 rounded"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+        >
+          Login as Admin
+        </button>
+      </form>
+
+      <!-- Surveyor Login Form (hidden by default) -->
+      <form id="surveyorForm" class="space-y-4 hidden">
+        <div>
+          <label class="block font-medium">Surveyor ID</label>
+          <input type="text" class="w-full border p-2 rounded" required />
+        </div>
+        <div>
+          <label class="block font-medium">Password</label>
+          <input type="password" class="w-full border p-2 rounded" required />
+        </div>
+        <button
+          type="submit"
+          class="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"
+        >
+          Login as Surveyor
+        </button>
+      </form>
     </div>
 
-    <!-- Admin Login Form -->
-    <form id="adminForm" class="space-y-4">
-      <div>
-        <label class="block font-medium">Admin ID</label>
-        <input type="email" id="adminEmail" class="w-full border p-2 rounded" required />
-      </div>
-      <div>
-        <label class="block font-medium">Password</label>
-        <input type="password" id="adminPassword" class="w-full border p-2 rounded" required />
+    <script>
+      const API_BASE =
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://demographic-hub-10.onrender.com";
 
-      </div>
-      <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Login as Admin</button>
-    </form>
+      function showForm(role) {
+        const adminForm = document.getElementById("adminForm");
+        const surveyorForm = document.getElementById("surveyorForm");
+        const adminTab = document.getElementById("adminTab");
+        const surveyorTab = document.getElementById("surveyorTab");
 
-    <!-- Surveyor Login Form (hidden by default) -->
-    <form id="surveyorForm" class="space-y-4 hidden">
-      <div>
-        <label class="block font-medium">Surveyor ID</label>
-        <input type="text" class="w-full border p-2 rounded" required />
-      </div>
-      <div>
-        <label class="block font-medium">Password</label>
-        <input type="password" class="w-full border p-2 rounded" required />
-      </div>
-      <button type="submit" class="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">Login as Surveyor</button>
-    </form>
-  </div>
-
-  <script>
-  const API_BASE =
-    window.location.hostname === 'localhost'
-      ? 'http://localhost:3000'
-      : 'https://demographic-hub-10.onrender.com';
-
-  function showForm(role) {
-    const adminForm = document.getElementById('adminForm');
-    const surveyorForm = document.getElementById('surveyorForm');
-    const adminTab = document.getElementById('adminTab');
-    const surveyorTab = document.getElementById('surveyorTab');
-
-    if (role === 'admin') {
-      adminForm.classList.remove('hidden');
-      surveyorForm.classList.add('hidden');
-      adminTab.classList.replace('bg-gray-200', 'bg-blue-600');
-      adminTab.classList.replace('text-blue-600', 'text-white');
-      surveyorTab.classList.replace('bg-blue-600', 'bg-gray-200');
-      surveyorTab.classList.replace('text-white', 'text-blue-600');
-    } else {
-      adminForm.classList.add('hidden');
-      surveyorForm.classList.remove('hidden');
-      surveyorTab.classList.replace('bg-gray-200', 'bg-blue-600');
-      surveyorTab.classList.replace('text-blue-600', 'text-white');
-      adminTab.classList.replace('bg-blue-600', 'bg-gray-200');
-      adminTab.classList.replace('text-white', 'text-blue-600');
-    }
-  }
-
-  // Handle Admin Login
-  document.getElementById('adminForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('adminEmail').value;
-    const password = document.getElementById('adminPassword').value;
-
-    try {
-      const res = await fetch(`${API_BASE}/api/admin/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        alert('Login successful');
-        // Optionally redirect to dashboard
-        window.location.href = 'index.html';
-      } else {
-        alert(data.error || 'Login failed');
+        if (role === "admin") {
+          adminForm.classList.remove("hidden");
+          surveyorForm.classList.add("hidden");
+          adminTab.classList.replace("bg-gray-200", "bg-blue-600");
+          adminTab.classList.replace("text-blue-600", "text-white");
+          surveyorTab.classList.replace("bg-blue-600", "bg-gray-200");
+          surveyorTab.classList.replace("text-white", "text-blue-600");
+        } else {
+          adminForm.classList.add("hidden");
+          surveyorForm.classList.remove("hidden");
+          surveyorTab.classList.replace("bg-gray-200", "bg-blue-600");
+          surveyorTab.classList.replace("text-blue-600", "text-white");
+          adminTab.classList.replace("bg-blue-600", "bg-gray-200");
+          adminTab.classList.replace("text-white", "text-blue-600");
+        }
       }
-    } catch (err) {
-      alert('Server error');
-    }
-  });
-  document.getElementById('surveyorForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const id = document.querySelector('#surveyorForm input[type="text"]').value;
-  const password = document.querySelector('#surveyorForm input[type="password"]').value;
 
-  try {
-    const res = await fetch(`${API_BASE}/api/surveyor/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, password })
-    });
+      // Handle Admin Login
+      document
+        .getElementById("adminForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const email = document.getElementById("adminEmail").value;
+          const password = document.getElementById("adminPassword").value;
 
-    const data = await res.json();
+          try {
+            const res = await fetch(`${API_BASE}/api/admin/login`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ email, password }),
+            });
 
-    if (res.ok) {
-      alert('Surveyor login successful');
-      window.location.href = 'surveyormanual.html'; // if you have one
-    } else {
-      alert(data.error || 'Login failed');
-    }
-  } catch (err) {
-    alert('Server error');
-  }
-});
-</script>
+            const data = await res.json();
+            if (res.ok) {
+              alert("Login successful");
+              // Optionally redirect to dashboard
+              window.location.href = "index.html";
+            } else {
+              alert(data.error || "Login failed");
+            }
+          } catch (err) {
+            alert("Server error");
+          }
+        });
+      document
+        .getElementById("surveyorForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const id = document.querySelector(
+            '#surveyorForm input[type="text"]'
+          ).value;
+          const password = document.querySelector(
+            '#surveyorForm input[type="password"]'
+          ).value;
 
-</body>
+          try {
+            const res = await fetch(`${API_BASE}/api/surveyor/login`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id, password }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+              alert("Surveyor login successful");
+              window.location.href = "surveyormanual.html"; // if you have one
+            } else {
+              alert(data.error || "Login failed");
+            }
+          } catch (err) {
+            alert("Server error");
+          }
+        });
+    </script>
+  </body>
 </html>
