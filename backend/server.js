@@ -31,7 +31,9 @@ app.use(
     origin: allowedOrigins.includes("*") ? "*" : allowedOrigins,
   })
 );
-app.use(express.json());
+// Accept JSON and form bodies; be permissive to avoid empty-body 400s in proxies
+app.use(express.json({ strict: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(staticDir));
 app.get("/", (req, res) => {
   res.sendFile(path.join(staticDir, "index.html"));
@@ -103,12 +105,15 @@ const adminCredentials = {
 };
 
 app.post("/api/admin/login", (req, res) => {
-  const { email, password } = req.body;
+  const body = req.body || {};
+  const email = body.email || body.id || body.username; // allow minor client variations
+  const password = body.password;
 
-  if (
-    email === adminCredentials.email &&
-    password === adminCredentials.password
-  ) {
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password are required" });
+  }
+
+  if (email === adminCredentials.email && password === adminCredentials.password) {
     return res.status(200).json({ success: true });
   } else {
     return res.status(401).json({ error: "Invalid credentials" });
