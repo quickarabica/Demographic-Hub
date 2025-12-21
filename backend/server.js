@@ -31,7 +31,7 @@ app.use(
     origin: allowedOrigins.includes("*") ? "*" : allowedOrigins,
   })
 );
-// Accept JSON and form bodies; be permissive to avoid empty-body 400s in proxies
+// Accept JSON and form bodies; be lenient so proxies don't drop them
 app.use(express.json({ strict: false }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(staticDir));
@@ -44,7 +44,7 @@ let db, recordsCollection, adminsCollection, surveyorsCollection;
 // Connect to MongoDB and then start the server
 MongoClient.connect(mongoUri, {
   tls: true,
-  serverApi: { version: "1", strict: true, deprecationErrors: true },
+  serverApi: { version: '1', strict: true, deprecationErrors: true },
 })
   .then((client) => {
     console.log("Connected to MongoDB");
@@ -106,7 +106,7 @@ const adminCredentials = {
 
 app.post("/api/admin/login", (req, res) => {
   const body = req.body || {};
-  const email = body.email || body.id || body.username; // allow minor client variations
+  const email = body.email || body.id || body.username;
   const password = body.password;
 
   if (!email || !password) {
@@ -115,9 +115,9 @@ app.post("/api/admin/login", (req, res) => {
 
   if (email === adminCredentials.email && password === adminCredentials.password) {
     return res.status(200).json({ success: true });
-  } else {
-    return res.status(401).json({ error: "Invalid credentials" });
   }
+
+  return res.status(401).json({ error: "Invalid credentials" });
 });
 
 app.post("/api/surveyor/register", async (req, res) => {
