@@ -1,8 +1,8 @@
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "..", ".env") });
 const express = require("express");
 const { MongoClient } = require("mongodb");
 const cors = require("cors");
-const path = require("path");
 const bcrypt = require("bcryptjs");
 
 const app = express();
@@ -12,10 +12,15 @@ const normalizeEnv = (name, fallback) => {
   return raw.replace(/^['"]|['"]$/g, ""); // remove wrapping quotes if present
 };
 
-const port = Number(normalizeEnv("PORT", "3000")) || 3000;
-const mongoUri = normalizeEnv("MONGODB_URI", "mongodb://localhost:27017");
-const dbName = normalizeEnv("DB_NAME", "demographicDB");
+const port = Number(normalizeEnv("PORT")) || 3000;
+const mongoUri = normalizeEnv("MONGODB_URI");
+const dbName = normalizeEnv("DB_NAME");
 const staticDir = path.join(__dirname, "..", "frontend");
+
+if (!mongoUri || !dbName) {
+  console.error("Missing required env: MONGODB_URI or DB_NAME");
+  process.exit(1);
+}
 
 const allowedOrigins = normalizeEnv("CORS_ORIGIN", "*")
   .split(",")
@@ -35,7 +40,10 @@ app.get("/", (req, res) => {
 let db, recordsCollection, adminsCollection, surveyorsCollection;
 
 // Connect to MongoDB and then start the server
-MongoClient.connect(mongoUri, {})
+MongoClient.connect(mongoUri, {
+  tls: true,
+  serverApi: { version: "1", strict: true, deprecationErrors: true },
+})
   .then((client) => {
     console.log("Connected to MongoDB");
     db = client.db(dbName);
