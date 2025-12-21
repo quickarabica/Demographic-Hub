@@ -44,7 +44,7 @@ let db, recordsCollection, adminsCollection, surveyorsCollection;
 // Connect to MongoDB and then start the server
 MongoClient.connect(mongoUri, {
   tls: true,
-  serverApi: { version: '1', strict: true, deprecationErrors: true },
+  serverApi: { version: "1", strict: true, deprecationErrors: true },
 })
   .then((client) => {
     console.log("Connected to MongoDB");
@@ -113,7 +113,10 @@ app.post("/api/admin/login", (req, res) => {
     return res.status(400).json({ error: "Email and password are required" });
   }
 
-  if (email === adminCredentials.email && password === adminCredentials.password) {
+  if (
+    email === adminCredentials.email &&
+    password === adminCredentials.password
+  ) {
     return res.status(200).json({ success: true });
   }
 

@@ -135,16 +135,17 @@
           adminTab.classList.replace("bg-blue-600", "bg-gray-200");
           adminTab.classList.replace("text-white", "text-blue-600");
         }
+      }
+
+      document
+        .getElementById("adminForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const email = document.getElementById("adminEmail").value;
+          const password = document.getElementById("adminPassword").value;
+
+          try {
             const res = await fetch(`${API_BASE}/api/admin/login`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ email, password }),
-            });
-            const res = await fetch(
-              "https://demographic-hub-10.onrender.com/api/admin/login",
-              {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
