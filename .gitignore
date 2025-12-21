@@ -2,5 +2,7 @@ node_modules/
 a.csv
 package-lock.json
 .env
-package.json
+**/.env
+.env.local
+.env.*.local
 mongodb.txt
