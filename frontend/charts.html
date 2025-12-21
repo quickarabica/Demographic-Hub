@@ -118,7 +118,7 @@
       });
 
       async function renderCharts() {
-        const records = await fetchRecords();
+        const records = (await fetchRecords()) || [];
 
         // --- Surname Bar Chart ---
         const surnames = records.reduce((acc, rec) => {

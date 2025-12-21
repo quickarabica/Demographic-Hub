@@ -22,50 +22,66 @@
       </header>
 
       <div class="grid md:grid-cols-2 gap-4">
-        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-lg">
-          <h2 class="text-lg font-semibold mb-3">Sort Records</h2>
-          <div class="flex flex-wrap gap-2">
-            <button onclick="sortRecords('age')" class="chip">Age</button>
-            <button onclick="sortRecords('address')" class="chip">
-              Address
-            </button>
-            <button onclick="sortRecords('part_no')" class="chip">
-              Part No
-            </button>
-            <button onclick="sortRecords('caste')" class="chip">Caste</button>
-          </div>
-        </div>
-
-        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-lg">
-          <h2 class="text-lg font-semibold mb-3">Filter Records</h2>
+        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-lg space-y-3">
+          <h2 class="text-lg font-semibold">Filter & Search</h2>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search name, address, society"
+            class="input"
+          />
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <input
-              type="text"
-              id="filterName"
-              placeholder="Name"
-              class="input"
-              oninput="filterRecords()"
-            />
-            <input
-              type="number"
-              id="filterAge"
-              placeholder="Age"
-              class="input"
-              oninput="filterRecords()"
-            />
-            <input
-              type="text"
-              id="filterCaste"
-              placeholder="Caste"
-              class="input"
-              oninput="filterRecords()"
-            />
-            <select id="filterSex" class="input" onchange="filterRecords()">
+            <input type="number" id="filterAgeMin" placeholder="Age min" class="input" />
+            <input type="number" id="filterAgeMax" placeholder="Age max" class="input" />
+            <input type="text" id="filterCaste" placeholder="Caste" class="input" />
+            <select id="filterSex" class="input">
               <option value="">All Genders</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
             </select>
+            <select id="sortSelect" class="input">
+              <option value="name">Sort: Name</option>
+              <option value="age">Sort: Age</option>
+              <option value="part_no">Sort: Part No</option>
+              <option value="caste">Sort: Caste</option>
+            </select>
+            <select id="orderSelect" class="input">
+              <option value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </select>
+            <select id="pageSizeSelect" class="input">
+              <option value="10">10 / page</option>
+              <option value="20" selected>20 / page</option>
+              <option value="50">50 / page</option>
+            </select>
           </div>
+          <div class="flex gap-2">
+            <button id="resetFilters" class="btn-ghost">Reset</button>
+            <button id="exportCsv" class="btn-ghost">Export CSV</button>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-lg space-y-2">
+          <h2 class="text-lg font-semibold">Summary</h2>
+          <div class="grid grid-cols-2 gap-3 text-sm text-slate-700">
+            <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
+              <div class="font-semibold" id="statTotal">Total: --</div>
+              <div class="text-slate-500">Records found</div>
+            </div>
+            <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
+              <div class="font-semibold" id="statPage">Page: --</div>
+              <div class="text-slate-500">Showing range</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-xl shadow-lg p-4 flex items-center justify-between">
+        <div class="text-sm text-slate-600">Bulk actions for selected rows</div>
+        <div class="flex gap-2">
+          <button id="editSelected" class="btn-primary" disabled>Edit Selected</button>
+          <button id="deleteSelected" class="btn-danger" disabled>Delete Selected</button>
+          <button id="deleteAllBtn" class="btn-danger" disabled>Delete All</button>
         </div>
       </div>
 
@@ -75,6 +91,9 @@
         <table id="recordsTable" class="w-full text-left">
           <thead class="bg-slate-100 text-slate-800">
             <tr>
+              <th class="px-4 py-3 text-sm font-semibold w-12 text-center">
+                <input type="checkbox" id="selectAll" />
+              </th>
               <th class="px-4 py-3 text-sm font-semibold">Name</th>
               <th class="px-4 py-3 text-sm font-semibold">Age</th>
               <th class="px-4 py-3 text-sm font-semibold">Sex</th>
@@ -82,11 +101,20 @@
               <th class="px-4 py-3 text-sm font-semibold">Part No</th>
               <th class="px-4 py-3 text-sm font-semibold">Society</th>
               <th class="px-4 py-3 text-sm font-semibold">Caste</th>
+              <th class="px-4 py-3 text-sm font-semibold">Actions</th>
             </tr>
           </thead>
           <tbody id="recordsBody" class="divide-y divide-slate-100"></tbody>
         </table>
       </div>
+      <div class="flex justify-between items-center text-sm text-slate-600 mt-3">
+        <div>
+          <button id="prevPage" class="btn-ghost">Prev</button>
+          <button id="nextPage" class="btn-ghost">Next</button>
+        </div>
+        <div id="pageInfo"></div>
+      </div>
+      <div id="statusText" class="text-sm text-red-600"></div>
     </div>
     <style>
       .input {
@@ -126,11 +154,114 @@
         border-color: #bfdbfe;
         color: #1d4ed8;
       }
+      .btn-primary {
+        padding: 8px 12px;
+        background: #2563eb;
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        box-shadow: 0 3px 10px rgba(37, 99, 235, 0.25);
+        transition: transform 0.12s ease, box-shadow 0.12s ease,
+          background-color 0.12s ease;
+      }
+      .btn-primary:hover {
+        background: #1d4ed8;
+        transform: translateY(-1px);
+        box-shadow: 0 5px 16px rgba(37, 99, 235, 0.28);
+      }
+      .btn-primary:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+      }
+      .btn-ghost {
+        padding: 8px 12px;
+        background: #f8fafc;
+        color: #0f172a;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: transform 0.12s ease, box-shadow 0.12s ease,
+          border-color 0.12s ease, background-color 0.12s ease;
+      }
+      .btn-ghost:hover {
+        background: #e2e8f0;
+        border-color: #cbd5e1;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(15, 23, 42, 0.12);
+      }
+      .btn-danger {
+        padding: 8px 12px;
+        background: #ef4444;
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        box-shadow: 0 3px 10px rgba(239, 68, 68, 0.25);
+        transition: transform 0.12s ease, box-shadow 0.12s ease,
+          background-color 0.12s ease;
+      }
+      .btn-danger:hover {
+        background: #dc2626;
+        transform: translateY(-1px);
+        box-shadow: 0 5px 16px rgba(239, 68, 68, 0.28);
+      }
+      .btn-danger:disabled {
+        background: #fca5a5;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+      }
     </style>
     <script src="navbar.js"></script>
     <script>
       renderNavbar("records");
+      let allRecords = [];
       let records = [];
+      let total = 0;
+      let page = 1;
+      let pageSize = 20;
+      let sort = "name";
+      let order = "asc";
+      let editingId = null;
+      let selectedIds = new Set();
+
+      const searchInput = document.getElementById("searchInput");
+      const filterAgeMin = document.getElementById("filterAgeMin");
+      const filterAgeMax = document.getElementById("filterAgeMax");
+      const filterCaste = document.getElementById("filterCaste");
+      const filterSex = document.getElementById("filterSex");
+      const sortSelect = document.getElementById("sortSelect");
+      const orderSelect = document.getElementById("orderSelect");
+      const pageSizeSelect = document.getElementById("pageSizeSelect");
+      const resetFilters = document.getElementById("resetFilters");
+      const exportCsv = document.getElementById("exportCsv");
+      const editSelected = document.getElementById("editSelected");
+      const deleteSelected = document.getElementById("deleteSelected");
+      const deleteAllBtn = document.getElementById("deleteAllBtn");
+      const selectAll = document.getElementById("selectAll");
+      const prevPage = document.getElementById("prevPage");
+      const nextPage = document.getElementById("nextPage");
+      const pageInfo = document.getElementById("pageInfo");
+      const statTotal = document.getElementById("statTotal");
+      const statPage = document.getElementById("statPage");
+      const statusText = document.getElementById("statusText");
+
+      function updateSelectionControls() {
+        const visibleIds = records.map((r) => r._id);
+        const anyVisibleSelected = visibleIds.some((id) => selectedIds.has(id));
+        const allVisibleSelected =
+          visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id));
+        if (selectAll) {
+          selectAll.checked = allVisibleSelected;
+          selectAll.indeterminate = !allVisibleSelected && anyVisibleSelected;
+        }
+        editSelected.disabled = selectedIds.size !== 1;
+        deleteSelected.disabled = selectedIds.size === 0;
+        deleteAllBtn.disabled = allRecords.length === 0;
+      }
 
       function renderTable() {
         const tbody = document.getElementById("recordsBody");
@@ -138,70 +269,302 @@
         records.forEach((record) => {
           const row = document.createElement("tr");
           row.className = "hover:bg-blue-50";
-          row.innerHTML = `
-        <td class="px-4 py-3">${record.name}</td>
-        <td class="px-4 py-3">${record.age}</td>
-        <td class="px-4 py-3">${record.sex}</td>
-        <td class="px-4 py-3">${record.address}</td>
-        <td class="px-4 py-3">${record.part_no}</td>
-        <td class="px-4 py-3">${record.society}</td>
-        <td class="px-4 py-3">${record.caste}</td>
-      `;
+          const isEditing = editingId === record._id;
+          const cells = isEditing
+            ? `
+          <td class="px-4 py-3 text-center"><input type="checkbox" class="row-select" data-id="${record._id}" ${selectedIds.has(record._id) ? "checked" : ""} disabled /></td>
+          <td class="px-4 py-3"><input class="input" data-field="name" value="${record.name || ""}" /></td>
+          <td class="px-4 py-3"><input class="input" data-field="age" type="number" value="${record.age || ""}" /></td>
+          <td class="px-4 py-3"><input class="input" data-field="sex" value="${record.sex || ""}" /></td>
+          <td class="px-4 py-3"><input class="input" data-field="address" value="${record.address || ""}" /></td>
+          <td class="px-4 py-3"><input class="input" data-field="part_no" value="${record.part_no || ""}" /></td>
+          <td class="px-4 py-3"><input class="input" data-field="society" value="${record.society || ""}" /></td>
+          <td class="px-4 py-3"><input class="input" data-field="caste" value="${record.caste || ""}" /></td>
+          <td class="px-4 py-3 space-x-2">
+            <button class="btn-primary save-btn" data-id="${record._id}">Save</button>
+            <button class="btn-ghost cancel-btn" data-id="${record._id}">Cancel</button>
+          </td>`
+            : `
+          <td class="px-4 py-3 text-center"><input type="checkbox" class="row-select" data-id="${record._id}" ${selectedIds.has(record._id) ? "checked" : ""} /></td>
+          <td class="px-4 py-3">${record.name}</td>
+          <td class="px-4 py-3">${record.age}</td>
+          <td class="px-4 py-3">${record.sex}</td>
+          <td class="px-4 py-3">${record.address}</td>
+          <td class="px-4 py-3">${record.part_no}</td>
+          <td class="px-4 py-3">${record.society}</td>
+          <td class="px-4 py-3">${record.caste}</td>
+          <td class="px-4 py-3 text-slate-400 text-sm">—</td>`;
+          row.innerHTML = cells;
           tbody.appendChild(row);
         });
+        const start = (page - 1) * pageSize + 1;
+        const end = Math.min(total, page * pageSize);
+        pageInfo.textContent = `Showing ${start}-${end} of ${total}`;
+        statTotal.textContent = `Total: ${total}`;
+        statPage.textContent = `Page ${page} / ${Math.max(1, Math.ceil(total / pageSize))}`;
+        prevPage.disabled = page <= 1;
+        nextPage.disabled = page * pageSize >= total;
+
+        bindRowActions();
+        updateSelectionControls();
       }
 
-      function sortRecords(key) {
-        records.sort((a, b) => {
-          if (key === "age") return Number(a[key]) - Number(b[key]);
-          return a[key].localeCompare(b[key]);
+      async function loadRecords() {
+        statusText.textContent = "";
+        try {
+          const res = await fetchRecords();
+          const list = Array.isArray(res) ? res : res?.data || [];
+          allRecords = list;
+          applyLocalFilters();
+        } catch (err) {
+          console.error(err);
+          statusText.textContent = "Failed to load records";
+          allRecords = [];
+          records = [];
+          total = 0;
+          renderTable();
+        }
+      }
+
+      function applyLocalFilters() {
+        // Drop selections that no longer exist
+        selectedIds = new Set(
+          [...selectedIds].filter((id) => allRecords.some((r) => r._id === id))
+        );
+
+        const search = searchInput.value.trim().toLowerCase();
+        const casteVal = filterCaste.value.trim().toLowerCase();
+        const sexVal = filterSex.value;
+        const ageMinVal = filterAgeMin.value;
+        const ageMaxVal = filterAgeMax.value;
+
+        let filtered = allRecords.filter((r) => {
+          const matchesSearch =
+            !search ||
+            (r.name || "").toLowerCase().includes(search) ||
+              (r.address || "").toLowerCase().includes(search) ||
+              (r.society || "").toLowerCase().includes(search);
+          const matchesCaste = !casteVal || (r.caste || "").toLowerCase().includes(casteVal);
+          const matchesSex = !sexVal || r.sex === sexVal;
+          const matchesAgeMin = ageMinVal === "" || Number(r.age) >= Number(ageMinVal);
+          const matchesAgeMax = ageMaxVal === "" || Number(r.age) <= Number(ageMaxVal);
+          return matchesSearch && matchesCaste && matchesSex && matchesAgeMin && matchesAgeMax;
         });
-        renderTable(); // only renders, no fetch
-      }
 
-      async function init() {
-        records = await fetchRecords();
+        filtered.sort((a, b) => {
+          const dir = order === "desc" ? -1 : 1;
+          const va = a[sort] ?? "";
+          const vb = b[sort] ?? "";
+          if (sort === "age") return (Number(va) - Number(vb)) * dir;
+          return `${va}`.localeCompare(`${vb}`) * dir;
+        });
+
+        total = filtered.length;
+        const maxPage = Math.max(1, Math.ceil(total / pageSize) || 1);
+        if (page > maxPage) {
+          page = maxPage;
+        }
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize;
+        records = filtered.slice(start, end);
         renderTable();
       }
 
-      init();
-      function filterRecords() {
-        const name = document.getElementById("filterName").value.toLowerCase();
-        const age = document.getElementById("filterAge").value;
-        const caste = document
-          .getElementById("filterCaste")
-          .value.toLowerCase();
-        const sex = document.getElementById("filterSex").value;
+      sortSelect.addEventListener("change", () => {
+        sort = sortSelect.value;
+        page = 1;
+        applyLocalFilters();
+      });
 
-        const filtered = records.filter((record) => {
-          const matchesName = record.name.toLowerCase().includes(name);
-          const matchesAge = age === "" || Number(record.age) === Number(age);
-          const matchesCaste = record.caste.toLowerCase().includes(caste);
-          const matchesSex = sex === "" || record.sex === sex;
-          return matchesName && matchesAge && matchesCaste && matchesSex;
+      orderSelect.addEventListener("change", () => {
+        order = orderSelect.value;
+        page = 1;
+        applyLocalFilters();
+      });
+
+      pageSizeSelect.addEventListener("change", () => {
+        pageSize = parseInt(pageSizeSelect.value, 10) || 20;
+        page = 1;
+        applyLocalFilters();
+      });
+
+      resetFilters.addEventListener("click", () => {
+        searchInput.value = "";
+        filterAgeMin.value = "";
+        filterAgeMax.value = "";
+        filterCaste.value = "";
+        filterSex.value = "";
+        sortSelect.value = "name";
+        orderSelect.value = "asc";
+        pageSizeSelect.value = "20";
+        sort = "name";
+        order = "asc";
+        pageSize = 20;
+        page = 1;
+        applyLocalFilters();
+      });
+
+      if (selectAll) {
+        selectAll.addEventListener("change", (e) => {
+          const check = e.target.checked;
+          records.forEach((r) => {
+            if (check) {
+              selectedIds.add(r._id);
+            } else {
+              selectedIds.delete(r._id);
+            }
+          });
+          updateSelectionControls();
+          renderTable();
         });
-
-        renderFilteredTable(filtered);
       }
 
-      function renderFilteredTable(filteredRecords) {
-        const tbody = document.getElementById("recordsBody");
-        tbody.innerHTML = "";
-        filteredRecords.forEach((record) => {
-          const row = document.createElement("tr");
-          row.className = "hover:bg-blue-50";
-          row.innerHTML = `
-      <td class="px-4 py-3">${record.name}</td>
-      <td class="px-4 py-3">${record.age}</td>
-      <td class="px-4 py-3">${record.sex}</td>
-      <td class="px-4 py-3">${record.address}</td>
-      <td class="px-4 py-3">${record.part_no}</td>
-      <td class="px-4 py-3">${record.society}</td>
-      <td class="px-4 py-3">${record.caste}</td>
-    `;
-          tbody.appendChild(row);
+      prevPage.addEventListener("click", () => {
+        if (page > 1) {
+          page -= 1;
+          applyLocalFilters();
+        }
+      });
+
+      nextPage.addEventListener("click", () => {
+        if (page * pageSize < total) {
+          page += 1;
+          applyLocalFilters();
+        }
+      });
+
+      exportCsv.addEventListener("click", () => {
+        if (!allRecords.length) return;
+        const headers = ["name", "age", "sex", "address", "part_no", "society", "caste"];
+        const lines = [headers.join(",")].concat(
+          allRecords.map((r) =>
+            headers
+              .map((h) => {
+                const val = r[h] ?? "";
+                const escaped = `${val}`.replace(/"/g, '""');
+                return `"${escaped}"`;
+              })
+              .join(",")
+          )
+        );
+        const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "records.csv";
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      // Debounce search input
+      let searchTimer;
+      searchInput.addEventListener("input", () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+          page = 1;
+          applyLocalFilters();
+        }, 300);
+      });
+
+      filterCaste.addEventListener("input", () => {
+        page = 1;
+        applyLocalFilters();
+      });
+      filterSex.addEventListener("change", () => {
+        page = 1;
+        applyLocalFilters();
+      });
+      filterAgeMin.addEventListener("input", () => {
+        page = 1;
+        applyLocalFilters();
+      });
+      filterAgeMax.addEventListener("input", () => {
+        page = 1;
+        applyLocalFilters();
+      });
+
+      function bindRowActions() {
+        document.querySelectorAll(".row-select").forEach((cb) => {
+          cb.addEventListener("change", (e) => {
+            const id = cb.getAttribute("data-id");
+            if (e.target.checked) {
+              selectedIds.add(id);
+            } else {
+              selectedIds.delete(id);
+            }
+            updateSelectionControls();
+          });
         });
+
+        document.querySelectorAll(".cancel-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            editingId = null;
+            renderTable();
+          });
+        });
+
+        document.querySelectorAll(".save-btn").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const id = btn.getAttribute("data-id");
+            const row = btn.closest("tr");
+            const draft = {};
+            row.querySelectorAll("[data-field]").forEach((input) => {
+              draft[input.getAttribute("data-field")] = input.value;
+            });
+            try {
+              const updated = await axios.put(`${API_BASE}/api/records/${id}`, draft);
+              const idx = allRecords.findIndex((r) => r._id === id);
+              if (idx >= 0) allRecords[idx] = updated.data;
+              editingId = null;
+              applyLocalFilters();
+            } catch (err) {
+              alert(err?.response?.data?.error || "Failed to save");
+            }
+          });
+        });
+
       }
+
+      editSelected.addEventListener("click", () => {
+        if (selectedIds.size !== 1) return;
+        const [onlyId] = [...selectedIds];
+        editingId = onlyId;
+        renderTable();
+      });
+
+      deleteSelected.addEventListener("click", async () => {
+        if (selectedIds.size === 0) return;
+        const ids = [...selectedIds];
+        if (!confirm(`Delete ${ids.length} selected record(s)?`)) return;
+        try {
+          await Promise.all(ids.map((id) => axios.delete(`${API_BASE}/api/records/${id}`)));
+          allRecords = allRecords.filter((r) => !selectedIds.has(r._id));
+          selectedIds.clear();
+          applyLocalFilters();
+        } catch (err) {
+          alert(err?.response?.data?.error || "Failed to delete selected records");
+        }
+      });
+
+      deleteAllBtn.addEventListener("click", async () => {
+        if (!allRecords.length) return;
+        if (!confirm("Delete ALL records? This cannot be undone.")) return;
+        try {
+          const ids = allRecords.map((r) => r._id);
+          await Promise.all(ids.map((id) => axios.delete(`${API_BASE}/api/records/${id}`)));
+          allRecords = [];
+          records = [];
+          selectedIds.clear();
+          total = 0;
+          page = 1;
+          renderTable();
+          updateSelectionControls();
+        } catch (err) {
+          alert(err?.response?.data?.error || "Failed to delete all records");
+        }
+      });
+
+      loadRecords();
     </script>
   </body>
 </html>

@@ -1,7 +1,7 @@
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "..", ".env") });
 const express = require("express");
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 
@@ -176,11 +176,56 @@ app.post("/api/surveyor/login", async (req, res) => {
   }
 });
 
-// API to get all records
+// API to get records with optional filtering, sorting, and pagination
 app.get("/api/records", async (req, res) => {
   try {
-    const records = await recordsCollection.find({}).toArray();
-    res.json(records);
+    const {
+      search = "",
+      sex = "",
+      caste = "",
+      ageMin,
+      ageMax,
+      sort = "name",
+      order = "asc",
+      page = 1,
+      pageSize = 20,
+    } = req.query;
+
+    const query = {};
+    if (search) {
+      const regex = new RegExp(search, "i");
+      query.$or = [{ name: regex }, { address: regex }, { society: regex }];
+    }
+    if (sex) query.sex = sex;
+    if (caste) query.caste = { $regex: caste, $options: "i" };
+    const min =
+      ageMin !== undefined && ageMin !== "" && Number.isFinite(Number(ageMin))
+        ? Number(ageMin)
+        : undefined;
+    const max =
+      ageMax !== undefined && ageMax !== "" && Number.isFinite(Number(ageMax))
+        ? Number(ageMax)
+        : undefined;
+    if (min !== undefined || max !== undefined) {
+      query.age = {};
+      if (min !== undefined) query.age.$gte = min;
+      if (max !== undefined) query.age.$lte = max;
+    }
+
+    const sortDir = order === "desc" ? -1 : 1;
+    const sortObj = { [sort]: sortDir };
+
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const sizeNum = Math.min(100, Math.max(1, parseInt(pageSize, 10) || 20));
+
+    const cursor = recordsCollection.find(query).sort(sortObj);
+    const total = await recordsCollection.countDocuments(query);
+    const data = await cursor
+      .skip((pageNum - 1) * sizeNum)
+      .limit(sizeNum)
+      .toArray();
+
+    res.json({ data, total, page: pageNum, pageSize: sizeNum });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -200,6 +245,54 @@ app.post("/api/records", async (req, res) => {
       caste,
     });
     res.json({ id: result.insertedId });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update a record
+app.put("/api/records/:id", async (req, res) => {
+  const { id } = req.params;
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({ error: "Invalid record id" });
+  }
+  const { name, age, sex, address, part_no, society, caste } = req.body;
+  const update = {};
+  if (name !== undefined) update.name = name;
+  if (age !== undefined) update.age = parseInt(age);
+  if (sex !== undefined) update.sex = sex;
+  if (address !== undefined) update.address = address;
+  if (part_no !== undefined) update.part_no = part_no;
+  if (society !== undefined) update.society = society;
+  if (caste !== undefined) update.caste = caste;
+
+  try {
+    const result = await recordsCollection.findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: update },
+      { returnDocument: "after" }
+    );
+    if (!result.value) {
+      return res.status(404).json({ error: "Record not found" });
+    }
+    res.json(result.value);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete a record
+app.delete("/api/records/:id", async (req, res) => {
+  const { id } = req.params;
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({ error: "Invalid record id" });
+  }
+  try {
+    const result = await recordsCollection.deleteOne({ _id: new ObjectId(id) });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: "Record not found" });
+    }
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
