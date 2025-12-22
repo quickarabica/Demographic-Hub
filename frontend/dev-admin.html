@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Developer Administration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="common.js"></script>
+  </head>
+  <body class="bg-slate-50 text-slate-900">
+    <div id="navbar"></div>
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <!-- <p class="text-sm uppercase tracking-wide text-slate-500">Developer</p> -->
+          <h1 class="text-3xl font-bold text-slate-900">
+            Developer Admin Console
+          </h1>
+          <p class="text-slate-500">
+            Manage admin and surveyor flows from one place.
+          </p>
+        </div>
+      </header>
+
+      <div class="grid gap-5 lg:grid-cols-2">
+        <div
+          class="bg-white border border-slate-200 rounded-2xl shadow-lg p-5 space-y-3"
+        >
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold">Register Admin</h2>
+          </div>
+            <div class="space-y-2">
+              <form id="adminCreateForm" class="space-y-2">
+              <input
+                id="newAdminEmail"
+                type="email"
+                class="input"
+                placeholder="Email"
+                required
+              />
+              <input
+                id="newAdminPassword"
+                type="password"
+                class="input"
+                placeholder="Password"
+                required
+              />
+              <button type="submit" class="btn-primary w-full">
+                Create Admin
+              </button>
+              <div id="adminCreateStatus" class="text-xs text-slate-600"></div>
+            </form>
+            <div class="pt-2 space-y-2">
+              <h4 class="text-sm font-semibold text-slate-800">List of Admins</h4>
+              <div class="overflow-x-auto -mx-2 sm:mx-0">
+                <table class="min-w-full text-sm text-slate-700 border border-slate-200 rounded-lg overflow-hidden">
+                  <thead class="bg-slate-100 text-slate-800">
+                    <tr>
+                      <th class="px-3 py-2 text-left">Email</th>
+                      <th class="px-3 py-2 text-left">Password</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminList"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="bg-white border border-slate-200 rounded-2xl shadow-lg p-5 space-y-3"
+        >
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold">Register Surveyor </h2>
+          </div>
+
+          <form id="surveyorCreateForm" class="space-y-2">
+              <input
+                id="newSurveyorId"
+                class="input"
+                placeholder="Surveyor ID"
+                required
+              />
+              <input
+                id="newSurveyorPassword"
+                type="password"
+                class="input"
+                placeholder="Password"
+                required
+              />
+              <button type="submit" class="btn-primary w-full">
+                Create Surveyor
+              </button>
+              <div
+                id="surveyorCreateStatus"
+                class="text-xs text-slate-600"
+              ></div>
+            </form>
+          <div class="pt-2 space-y-2">
+            <h4 class="text-sm font-semibold text-slate-800">List of Surveyors</h4>
+            <div class="overflow-x-auto -mx-2 sm:mx-0">
+              <table class="min-w-full text-sm text-slate-700 border border-slate-200 rounded-lg overflow-hidden">
+                <thead class="bg-slate-100 text-slate-800">
+                  <tr>
+                    <th class="px-3 py-2 text-left">ID</th>
+                    <th class="px-3 py-2 text-left">Password</th>
+                  </tr>
+                </thead>
+                <tbody id="surveyorList"></tbody>
+              </table>
+            </div>
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="navbar.js"></script>
+    <script>
+      renderNavbar("manual");
+
+      const adminForm = document.getElementById("adminCreateForm");
+      const adminStatus = document.getElementById("adminCreateStatus");
+      const adminList = document.getElementById("adminList");
+      const surveyorForm = document.getElementById("surveyorCreateForm");
+      const surveyorStatus = document.getElementById("surveyorCreateStatus");
+      const surveyorList = document.getElementById("surveyorList");
+
+      async function loadAdmins() {
+        try {
+          const res = await fetch(`${API_BASE}/api/admins`);
+          const data = await res.json();
+          adminList.innerHTML = "";
+          (Array.isArray(data) ? data : []).forEach((a) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td class="px-3 py-2 border-t border-slate-200">${
+                a.email || "(no email)"
+              }</td>
+              <td class="px-3 py-2 border-t border-slate-200">${
+                a.password || "(no password)"
+              }</td>`;
+            adminList.appendChild(row);
+          });
+        } catch (err) {
+          adminList.innerHTML = "<tr><td class='px-3 py-2 text-red-600' colspan='2'>Failed to load admins</td></tr>";
+        }
+      }
+
+      async function loadSurveyors() {
+        try {
+          const res = await fetch(`${API_BASE}/api/surveyors`);
+          const data = await res.json();
+          surveyorList.innerHTML = "";
+          (Array.isArray(data) ? data : []).forEach((s) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td class="px-3 py-2 border-t border-slate-200">${
+                s.id || "(no id)"
+              }</td>
+              <td class="px-3 py-2 border-t border-slate-200">${
+                s.password || "(no password)"
+              }</td>`;
+            surveyorList.appendChild(row);
+          });
+        } catch (err) {
+          surveyorList.innerHTML = "<tr><td class='px-3 py-2 text-red-600' colspan='2'>Failed to load surveyors</td></tr>";
+        }
+      }
+
+      adminForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        adminStatus.textContent = "Creating admin...";
+        try {
+          const email = document.getElementById("newAdminEmail").value;
+          const password = document.getElementById("newAdminPassword").value;
+          const res = await fetch(`${API_BASE}/api/admin/signup`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+          const data = await res.json();
+          if (res.ok) {
+            adminStatus.textContent = `Admin created (id: ${
+              data.adminId || "saved"
+            })`;
+            adminForm.reset();
+            loadAdmins();
+          } else {
+            adminStatus.textContent = data.error || "Failed to create admin";
+          }
+        } catch (err) {
+          adminStatus.textContent = "Server error creating admin";
+        }
+      });
+
+      surveyorForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        surveyorStatus.textContent = "Creating surveyor...";
+        try {
+          const id = document.getElementById("newSurveyorId").value;
+          const password = document.getElementById("newSurveyorPassword").value;
+          const res = await fetch(`${API_BASE}/api/surveyor/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id, password }),
+          });
+          const data = await res.json();
+          if (res.ok) {
+            surveyorStatus.textContent = data.message || "Surveyor created";
+            surveyorForm.reset();
+            loadSurveyors();
+          } else {
+            surveyorStatus.textContent =
+              data.error || "Failed to create surveyor";
+          }
+        } catch (err) {
+          surveyorStatus.textContent = "Server error creating surveyor";
+        }
+      });
+
+      loadAdmins();
+      loadSurveyors();
+    </script>
+  </body>
+</html>

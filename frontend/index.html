@@ -5,37 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login Page</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body
     class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center px-4"
   >
     <div
-      class="bg-white border border-slate-200 shadow-2xl rounded-2xl p-8 w-full max-w-lg text-slate-800"
+      class="bg-white border border-slate-200 shadow-2xl rounded-2xl p-6 sm:p-8 w-full max-w-lg text-slate-800"
     >
       <div class="text-center mb-6">
         <p class="text-sm uppercase tracking-wide text-slate-500">
           Welcome back
         </p>
         <h1 class="text-3xl font-bold text-slate-900">Demographics Hub</h1>
-        <p class="text-slate-500 mt-1">Admin & Surveyor secure access</p>
       </div>
 
       <div
-        class="flex justify-center mb-6 bg-slate-100 rounded-lg overflow-hidden border border-slate-200"
+        class="flex flex-col sm:flex-row justify-center mb-6 bg-slate-100 rounded-lg overflow-hidden border border-slate-200"
       >
         <button
           id="adminTab"
           onclick="showForm('admin')"
-          class="flex-1 px-4 py-3 text-sm font-semibold bg-white text-blue-700 border-r border-slate-200"
+          class="tab-btn tab-active"
         >
           Admin
         </button>
         <button
           id="surveyorTab"
           onclick="showForm('surveyor')"
-          class="flex-1 px-4 py-3 text-sm font-semibold text-slate-600"
+          class="tab-btn tab-inactive"
         >
           Surveyor
+        </button>
+        <button
+          id="developerTab"
+          onclick="showForm('developer')"
+          class="tab-btn tab-inactive"
+        >
+          Developer
         </button>
       </div>
 
@@ -103,6 +110,39 @@
         </button>
       </form>
 
+      <form id="developerForm" class="space-y-4 hidden">
+        <div>
+          <label class="block text-sm font-medium text-slate-700"
+            >Developer email</label
+          >
+          <input
+            type="email"
+            id="developerEmail"
+            class="w-full border-2 border-slate-300 bg-white text-slate-900 placeholder-slate-400 p-3 rounded-lg focus:ring-2 focus:ring-blue-300 focus:outline-none focus:border-blue-400 shadow-sm"
+            placeholder="dev@example.com"
+            required
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700"
+            >Password</label
+          >
+          <input
+            type="password"
+            id="developerPassword"
+            class="w-full border-2 border-slate-300 bg-white text-slate-900 placeholder-slate-400 p-3 rounded-lg focus:ring-2 focus:ring-blue-300 focus:outline-none focus:border-blue-400 shadow-sm"
+            placeholder="••••••••"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          class="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold p-3 rounded-lg transition shadow-md border border-purple-600"
+        >
+          Login as Developer
+        </button>
+      </form>
+
       <p class="text-center text-xs text-slate-500 mt-6">
         Use the tabs above to switch roles. Need an account? Ask your admin.
       </p>
@@ -115,26 +155,23 @@
           : "https://demographic-hub-10.onrender.com";
 
       function showForm(role) {
-        const adminForm = document.getElementById("adminForm");
-        const surveyorForm = document.getElementById("surveyorForm");
-        const adminTab = document.getElementById("adminTab");
-        const surveyorTab = document.getElementById("surveyorTab");
+        const forms = {
+          admin: document.getElementById("adminForm"),
+          surveyor: document.getElementById("surveyorForm"),
+          developer: document.getElementById("developerForm"),
+        };
+        const tabs = {
+          admin: document.getElementById("adminTab"),
+          surveyor: document.getElementById("surveyorTab"),
+          developer: document.getElementById("developerTab"),
+        };
 
-        if (role === "admin") {
-          adminForm.classList.remove("hidden");
-          surveyorForm.classList.add("hidden");
-          adminTab.classList.replace("bg-gray-200", "bg-blue-600");
-          adminTab.classList.replace("text-blue-600", "text-white");
-          surveyorTab.classList.replace("bg-blue-600", "bg-gray-200");
-          surveyorTab.classList.replace("text-white", "text-blue-600");
-        } else {
-          adminForm.classList.add("hidden");
-          surveyorForm.classList.remove("hidden");
-          surveyorTab.classList.replace("bg-gray-200", "bg-blue-600");
-          surveyorTab.classList.replace("text-blue-600", "text-white");
-          adminTab.classList.replace("bg-blue-600", "bg-gray-200");
-          adminTab.classList.replace("text-white", "text-blue-600");
-        }
+        Object.keys(forms).forEach((key) => {
+          const isActive = key === role;
+          forms[key].classList.toggle("hidden", !isActive);
+          tabs[key].classList.toggle("tab-active", isActive);
+          tabs[key].classList.toggle("tab-inactive", !isActive);
+        });
       }
 
       document
@@ -195,6 +232,35 @@
             alert("Server error");
           }
         });
+
+      document
+        .getElementById("developerForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const email = document.getElementById("developerEmail").value;
+          const password = document.getElementById("developerPassword").value;
+
+          try {
+            const res = await fetch(`${API_BASE}/api/developer/login`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, password }),
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+              alert("Developer login successful");
+              window.location.href = "dev-admin.html";
+            } else {
+              alert(data.error || "Login failed");
+            }
+          } catch (err) {
+            alert("Server error");
+          }
+        });
+
+      // Default to admin tab on load
+      showForm("admin");
     </script>
   </body>
 </html>

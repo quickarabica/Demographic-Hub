@@ -6,11 +6,12 @@
     <title>Surveyor Registration</title>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.7.2/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body class="bg-slate-50 text-slate-900">
     <div id="navbar"></div>
 
-    <div class="max-w-3xl mx-auto p-6">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6">
       <div class="bg-blue-50 border border-blue-100 rounded-2xl p-6 mb-4">
         <p class="text-sm uppercase tracking-wide text-blue-600">
           Surveyor Access
@@ -25,7 +26,7 @@
         id="registerForm"
         class="bg-white border border-slate-200 rounded-2xl shadow-xl p-6 space-y-4"
       >
-        <div class="grid md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-slate-700"
               >Surveyor ID</label
@@ -65,63 +66,32 @@
           >
         </div>
       </form>
+
+      <div
+        class="bg-white border border-slate-200 rounded-2xl shadow-xl p-6 mt-6 space-y-3"
+      >
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-slate-900">
+            Registered Surveyors
+          </h2>
+          <button id="refreshList" class="btn-ghost">Refresh</button>
+        </div>
+        <div class="overflow-x-auto -mx-2 sm:mx-0">
+          <table
+            class="min-w-full text-sm text-slate-700 border border-slate-200 rounded-lg overflow-hidden"
+          >
+            <thead class="bg-slate-100 text-slate-800">
+              <tr>
+                <th class="px-3 py-2 text-left">Surveyor ID</th>
+                <th class="px-3 py-2 text-left">Password</th>
+              </tr>
+            </thead>
+            <tbody id="surveyorList"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
-    <style>
-      .input {
-        width: 100%;
-        border: 2px solid #2563eb;
-        background: #ffffff;
-        color: #0f172a;
-        padding: 12px;
-        border-radius: 12px;
-        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
-        transition: border-color 0.2s ease, box-shadow 0.2s ease,
-          background-color 0.2s ease;
-      }
-      .input::placeholder {
-        color: #6b7280;
-      }
-      .input:focus {
-        outline: none;
-        border-color: #1d4ed8;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
-        background: #f8fbff;
-      }
-      .btn-primary {
-        background: linear-gradient(90deg, #2563eb, #4f46e5);
-        color: #ffffff;
-        font-weight: 600;
-        padding: 12px 16px;
-        border-radius: 12px;
-        border: 1px solid #1d4ed8;
-        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
-        transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
-      }
-      .btn-primary:hover {
-        filter: brightness(1.05);
-        box-shadow: 0 12px 30px rgba(79, 70, 229, 0.25);
-        transform: translateY(-1px);
-      }
-      .btn-primary:active {
-        transform: translateY(0);
-        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
-      }
-      .btn-ghost {
-        background: #ffffff;
-        color: #1f2937;
-        padding: 12px 16px;
-        border-radius: 12px;
-        border: 2px solid #e2e8f0;
-        transition: background-color 0.15s ease, border-color 0.15s ease,
-          color 0.15s ease;
-      }
-      .btn-ghost:hover {
-        background: #f8fafc;
-        border-color: #bfdbfe;
-        color: #1d4ed8;
-      }
-    </style>
     <script src="navbar.js"></script>
     <script>
       const API_BASE =
@@ -134,6 +104,8 @@
       const statusMsg = document.getElementById("statusMsg");
       const resetBtn = document.getElementById("resetBtn");
       const backToLogin = document.getElementById("backToLogin");
+      const surveyorList = document.getElementById("surveyorList");
+      const refreshList = document.getElementById("refreshList");
 
       function setStatus(message, isError = false) {
         statusMsg.textContent = message;
@@ -161,6 +133,7 @@
           if (res.status === 201 || res.status === 200) {
             setStatus("Surveyor registered successfully");
             form.reset();
+            loadSurveyors();
           } else {
             setStatus(res.data?.error || "Registration failed", true);
           }
@@ -168,6 +141,35 @@
           setStatus(err?.response?.data?.error || "Server error", true);
         }
       });
+
+      async function loadSurveyors() {
+        surveyorList.innerHTML =
+          "<tr><td class='px-3 py-2' colspan='2'>Loading...</td></tr>";
+        try {
+          const res = await axios.get(`${API_BASE}/api/surveyors`);
+          const data = Array.isArray(res.data) ? res.data : [];
+          surveyorList.innerHTML = "";
+          data.forEach((s) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td class="px-3 py-2 border-t border-slate-200">${
+                s.id || "(no id)"
+              }</td>
+              <td class="px-3 py-2 border-t border-slate-200">${
+                s.password || "(no password)"
+              }</td>
+            `;
+            surveyorList.appendChild(row);
+          });
+        } catch (err) {
+          surveyorList.innerHTML =
+            "<tr><td class='px-3 py-2 text-red-600' colspan='2'>Failed to load surveyors</td></tr>";
+        }
+      }
+
+      refreshList.addEventListener("click", loadSurveyors);
+
+      loadSurveyors();
     </script>
   </body>
 </html>

@@ -7,11 +7,14 @@
     <script src="https://cdn.jsdelivr.net/npm/axios@1.7.2/dist/axios.min.js"></script>
     <script src="common.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body class="bg-slate-50 text-slate-900">
     <div id="navbar"></div>
-    <div class="max-w-6xl mx-auto p-6 space-y-6">
-      <header class="flex items-center justify-between">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <header
+        class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
+      >
         <div>
           <p class="text-sm uppercase tracking-wide text-slate-500">Dataset</p>
           <h1 class="text-3xl font-bold text-slate-900">Records</h1>
@@ -21,7 +24,7 @@
         </div>
       </header>
 
-      <div class="grid md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div
           class="bg-white border border-slate-200 rounded-xl p-4 shadow-lg space-y-3"
         >
@@ -32,7 +35,7 @@
             placeholder="Search name, address, society"
             class="input"
           />
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <input
               type="number"
               id="filterAgeMin"
@@ -72,7 +75,7 @@
               <option value="50">50 / page</option>
             </select>
           </div>
-          <div class="flex gap-2">
+          <div class="flex flex-wrap gap-2">
             <button id="resetFilters" class="btn-ghost">Reset</button>
             <button id="exportCsv" class="btn-ghost">Export CSV</button>
           </div>
@@ -96,10 +99,10 @@
       </div>
 
       <div
-        class="bg-white border border-slate-200 rounded-xl shadow-lg p-4 flex items-center justify-between"
+        class="bg-white border border-slate-200 rounded-xl shadow-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
       >
         <div class="text-sm text-slate-600">Bulk actions for selected rows</div>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
           <button id="editSelected" class="btn-primary" disabled>
             Edit Selected
           </button>
@@ -112,32 +115,32 @@
         </div>
       </div>
 
-      <div
-        class="bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden"
-      >
-        <table id="recordsTable" class="w-full text-left">
-          <thead class="bg-slate-100 text-slate-800">
-            <tr>
-              <th class="px-4 py-3 text-sm font-semibold w-12 text-center">
-                <input type="checkbox" id="selectAll" />
-              </th>
-              <th class="px-4 py-3 text-sm font-semibold">Name</th>
-              <th class="px-4 py-3 text-sm font-semibold">Age</th>
-              <th class="px-4 py-3 text-sm font-semibold">Sex</th>
-              <th class="px-4 py-3 text-sm font-semibold">Address</th>
-              <th class="px-4 py-3 text-sm font-semibold">Part No</th>
-              <th class="px-4 py-3 text-sm font-semibold">Society</th>
-              <th class="px-4 py-3 text-sm font-semibold">Caste</th>
-              <th class="px-4 py-3 text-sm font-semibold">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="recordsBody" class="divide-y divide-slate-100"></tbody>
-        </table>
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-xl">
+        <div class="overflow-x-auto">
+          <table id="recordsTable" class="min-w-full text-left">
+            <thead class="bg-slate-100 text-slate-800">
+              <tr>
+                <th class="px-4 py-3 text-sm font-semibold w-12 text-center">
+                  <input type="checkbox" id="selectAll" />
+                </th>
+                <th class="px-4 py-3 text-sm font-semibold">Name</th>
+                <th class="px-4 py-3 text-sm font-semibold">Age</th>
+                <th class="px-4 py-3 text-sm font-semibold">Sex</th>
+                <th class="px-4 py-3 text-sm font-semibold">Address</th>
+                <th class="px-4 py-3 text-sm font-semibold">Part No</th>
+                <th class="px-4 py-3 text-sm font-semibold">Society</th>
+                <th class="px-4 py-3 text-sm font-semibold">Caste</th>
+                <th class="px-4 py-3 text-sm font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="recordsBody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
       </div>
       <div
-        class="flex justify-between items-center text-sm text-slate-600 mt-3"
+        class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-slate-600 mt-3"
       >
-        <div>
+        <div class="flex gap-2">
           <button id="prevPage" class="btn-ghost">Prev</button>
           <button id="nextPage" class="btn-ghost">Next</button>
         </div>
@@ -145,105 +148,6 @@
       </div>
       <div id="statusText" class="text-sm text-red-600"></div>
     </div>
-    <style>
-      .input {
-        width: 100%;
-        border: 2px solid #2563eb;
-        background: #ffffff;
-        color: #0f172a;
-        padding: 10px;
-        border-radius: 12px;
-        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
-        transition: border-color 0.2s ease, box-shadow 0.2s ease,
-          background-color 0.2s ease;
-      }
-      .input::placeholder {
-        color: #6b7280;
-      }
-      .input:focus {
-        outline: none;
-        border-color: #1d4ed8;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
-        background: #f8fbff;
-      }
-      .chip {
-        display: inline-flex;
-        align-items: center;
-        padding: 10px 14px;
-        border-radius: 999px;
-        background: #f1f5f9;
-        color: #1f2937;
-        font-size: 0.9rem;
-        border: 2px solid #e2e8f0;
-        transition: background-color 0.15s ease, border-color 0.15s ease,
-          color 0.15s ease;
-      }
-      .chip:hover {
-        background: #eff6ff;
-        border-color: #bfdbfe;
-        color: #1d4ed8;
-      }
-      .btn-primary {
-        padding: 8px 12px;
-        background: #2563eb;
-        color: #ffffff;
-        border: none;
-        border-radius: 10px;
-        font-weight: 600;
-        box-shadow: 0 3px 10px rgba(37, 99, 235, 0.25);
-        transition: transform 0.12s ease, box-shadow 0.12s ease,
-          background-color 0.12s ease;
-      }
-      .btn-primary:hover {
-        background: #1d4ed8;
-        transform: translateY(-1px);
-        box-shadow: 0 5px 16px rgba(37, 99, 235, 0.28);
-      }
-      .btn-primary:disabled {
-        background: #94a3b8;
-        cursor: not-allowed;
-        box-shadow: none;
-        transform: none;
-      }
-      .btn-ghost {
-        padding: 8px 12px;
-        background: #f8fafc;
-        color: #0f172a;
-        border: 2px solid #e2e8f0;
-        border-radius: 10px;
-        font-weight: 600;
-        transition: transform 0.12s ease, box-shadow 0.12s ease,
-          border-color 0.12s ease, background-color 0.12s ease;
-      }
-      .btn-ghost:hover {
-        background: #e2e8f0;
-        border-color: #cbd5e1;
-        transform: translateY(-1px);
-        box-shadow: 0 3px 8px rgba(15, 23, 42, 0.12);
-      }
-      .btn-danger {
-        padding: 8px 12px;
-        background: #ef4444;
-        color: #ffffff;
-        border: none;
-        border-radius: 10px;
-        font-weight: 700;
-        box-shadow: 0 3px 10px rgba(239, 68, 68, 0.25);
-        transition: transform 0.12s ease, box-shadow 0.12s ease,
-          background-color 0.12s ease;
-      }
-      .btn-danger:hover {
-        background: #dc2626;
-        transform: translateY(-1px);
-        box-shadow: 0 5px 16px rgba(239, 68, 68, 0.28);
-      }
-      .btn-danger:disabled {
-        background: #fca5a5;
-        cursor: not-allowed;
-        box-shadow: none;
-        transform: none;
-      }
-    </style>
     <script src="navbar.js"></script>
     <script>
       renderNavbar("records");

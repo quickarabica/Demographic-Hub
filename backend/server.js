@@ -3,7 +3,6 @@ require("dotenv").config({ path: path.resolve(__dirname, "..", ".env") });
 const express = require("express");
 const { MongoClient, ObjectId } = require("mongodb");
 const cors = require("cors");
-const bcrypt = require("bcryptjs");
 
 const app = express();
 const normalizeEnv = (name, fallback) => {
@@ -64,11 +63,9 @@ MongoClient.connect(mongoUri, {
 
 app.post("/api/admin/signup", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) {
-      return res
-        .status(400)
-        .json({ error: "Name, email, and password are required" });
+    const { name = "", email, password } = req.body || {};
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
     // Check if admin already exists
@@ -79,14 +76,11 @@ app.post("/api/admin/signup", async (req, res) => {
         .json({ error: "Admin with this email already exists" });
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     // Insert new admin
     const result = await adminsCollection.insertOne({
       name,
       email,
-      password: hashedPassword,
+      password,
     });
 
     res.json({
@@ -97,20 +91,44 @@ app.post("/api/admin/signup", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+app.get("/api/admins", async (_req, res) => {
+  try {
+    const admins = await adminsCollection.find({}).toArray();
+    res.json(admins);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 // Admin login route
 
 const adminCredentials = {
   email: normalizeEnv("ADMIN_EMAIL", "admin@example.com"),
-  password: normalizeEnv("ADMIN_PASSWORD", "admin123"), // In production, hash this!
+  password: normalizeEnv("ADMIN_PASSWORD", "admin123"), // legacy fallback
 };
 
-app.post("/api/admin/login", (req, res) => {
+const developerCredentials = {
+  email: normalizeEnv("DEVELOPER_EMAIL", "dev@example.com"),
+  password: normalizeEnv("DEVELOPER_PASSWORD", "dev123"),
+};
+
+app.post("/api/admin/login", async (req, res) => {
   const body = req.body || {};
   const email = body.email || body.id || body.username;
   const password = body.password;
 
   if (!email || !password) {
     return res.status(400).json({ error: "Email and password are required" });
+  }
+
+  try {
+    const admin = await adminsCollection.findOne({ email });
+    if (admin && admin.password === password) {
+      return res.status(200).json({ success: true });
+    }
+  } catch (err) {
+    console.error("Admin login error", err);
+    return res.status(500).json({ error: "Server error" });
   }
 
   if (
@@ -120,6 +138,20 @@ app.post("/api/admin/login", (req, res) => {
     return res.status(200).json({ success: true });
   }
 
+  return res.status(401).json({ error: "Invalid credentials" });
+});
+
+app.post("/api/developer/login", (req, res) => {
+  const { email, password } = req.body || {};
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password are required" });
+  }
+  if (
+    email === developerCredentials.email &&
+    password === developerCredentials.password
+  ) {
+    return res.status(200).json({ success: true });
+  }
   return res.status(401).json({ error: "Invalid credentials" });
 });
 
@@ -137,16 +169,22 @@ app.post("/api/surveyor/register", async (req, res) => {
       return res.status(409).json({ error: "Surveyor already exists" });
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     // Insert new surveyor
-    await surveyorsCollection.insertOne({ id, password: hashedPassword });
+    await surveyorsCollection.insertOne({ id, password });
 
     return res.status(201).json({ message: "Surveyor registered" });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.get("/api/surveyors", async (_req, res) => {
+  try {
+    const surveyors = await surveyorsCollection.find({}).toArray();
+    res.json(surveyors);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -164,8 +202,7 @@ app.post("/api/surveyor/login", async (req, res) => {
     }
 
     // Compare password with hashed password
-    const isMatch = await bcrypt.compare(password, surveyor.password);
-    if (!isMatch) {
+    if (password !== surveyor.password) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
